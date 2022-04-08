@@ -2,6 +2,11 @@
 
 pragma solidity ^0.8.0;
 
+/*
+* @author Wilson Soto
+* @notice Smart Contract Software Development Agreement
+*/
+
 contract SWAgreement
 {
     address public developer;   // government who creates the agreement
@@ -38,7 +43,8 @@ contract SWAgreement
         uint dateAcceptance;
     }
 
-    //define the agreement software
+    /*** General Data Agreement ***/
+
     constructor  ()   {
         developer = msg.sender;
         client = 0x2fcd44991ca6B22177Dc6b45e8699C6C389066c8;
@@ -146,4 +152,7 @@ contract SWAgreement
     }
     */
 
+    /*** Payments ***/
+
 }
+
