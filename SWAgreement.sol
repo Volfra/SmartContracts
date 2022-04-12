@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: MIT
-
 pragma solidity ^0.8.0;
 
 /*
 * @author Wilson Soto
 * @notice Smart Contract Software Development Agreement
 */
+
+import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
 contract SWAgreement
 {
@@ -161,6 +162,32 @@ contract SWAgreement
 
     /*** Payments ***/
 
+    uint public payTime = uint(0);
+
+    function pay() public payable {
+        payTime = nowDate();
+        // ETH -> USD conversion rate
+        msg.value;
+    }
+
+    function getVersion() public view returns (uint256) {
+        AggregatorV3Interface valPay = AggregatorV3Interface(0x8A753747A1Fa494EC906cE90E9f37563A8AF630e);
+        return valPay.version();
+    }
+
+    function getPrice () public view returns (uint256) {
+        AggregatorV3Interface valPay = AggregatorV3Interface(0x8A753747A1Fa494EC906cE90E9f37563A8AF630e);
+        (,int256 answer,,,) = valPay.latestRoundData();
+        return uint256(answer * 10000000000);
+    }
+
+    // Wei = 1000000000000000000
+    // Gwei = 1000000000
+    // Eth = 1
+    function getConversionRate (uint256 ethAmount) public view returns (uint256) {
+        uint256 ethPrice = getPrice();
+        uint256 ethAmountInUsd = (ethPrice * ethAmount) / 1000000000000000000;
+        return ethAmountInUsd;
+    }
+
 }
-
-
