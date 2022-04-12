@@ -17,9 +17,10 @@ contract SWAgreement
     uint public finishTime = uint(0);  
     uint public totalTime = uint(0); 
     uint public nowTime = uint(0); 
-
+    uint public signTime = uint(0);
     //total no of requirements via this contract at any time
     uint public totalReq = uint(0); 
+    bool public signAgreement = false;
     
     struct _requirement 
     {
@@ -47,10 +48,16 @@ contract SWAgreement
 
     constructor  ()   {
         developer = msg.sender;
-        client = 0x2fcd44991ca6B22177Dc6b45e8699C6C389066c8;
         beginTime = nowDate();
     }
     
+    //Signature agreement
+    function signature (address clientAddress) public {
+        client = clientAddress;
+        signTime = nowDate();
+        signAgreement = true;
+    }
+
     //addition event
     //event Add(address _client, uint _reqID);
     
@@ -155,4 +162,5 @@ contract SWAgreement
     /*** Payments ***/
 
 }
+
 
