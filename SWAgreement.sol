@@ -65,7 +65,7 @@ contract SWAgreement
     
     modifier isOwner
     {
-        require(msg.sender == developer);
+        require(msg.sender == client);
         _;
     }
     
@@ -169,7 +169,6 @@ contract SWAgreement
         uint256 minimumUsd = minimumValPay * 10 ** 18;
         require(getConversionRate(msg.value) >= minimumUsd ," You need to spend more ETH");
         payTime = nowDate();
-        withdraw();
     }
 
     function getVersion() public view returns (uint256) {
@@ -191,9 +190,9 @@ contract SWAgreement
         return ethAmountInUsd;
     }
 
-    function withdraw() payable public {
-        payable(msg.sender).transfer(address(developer).balance);
+    //return funds to client
+    function withdraw() payable isOwner public {
+        payable(msg.sender).transfer(address(this).balance);
     }
 
 }
-
