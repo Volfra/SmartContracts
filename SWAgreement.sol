@@ -10,7 +10,7 @@ import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
 contract SWAgreement
 {
-    address public developer;   // government who creates the agreement
+    address public developer = 0x2fcd44991ca6B22177Dc6b45e8699C6C389066c8;   // government who creates the agreement
     address public client; // whom address the agreement
     uint public cost;
 
@@ -49,7 +49,7 @@ contract SWAgreement
     /*** General Data Agreement ***/
 
     constructor  ()   {
-        developer = msg.sender;
+        client = msg.sender;
         beginTime = nowDate();
     }
     
@@ -169,7 +169,7 @@ contract SWAgreement
         uint256 minimumUsd = minimumValPay * 10 ** 18;
         require(getConversionRate(msg.value) >= minimumUsd ," You need to spend more ETH");
         payTime = nowDate();
-        
+        withdraw();
     }
 
     function getVersion() public view returns (uint256) {
@@ -189,6 +189,10 @@ contract SWAgreement
         uint256 ethPrice = getPrice();
         uint256 ethAmountInUsd = (ethPrice * ethAmount) / 1000000000000000000;
         return ethAmountInUsd;
+    }
+
+    function withdraw() payable public {
+        payable(msg.sender).transfer(address(developer).balance);
     }
 
 }
