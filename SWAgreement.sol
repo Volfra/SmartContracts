@@ -22,6 +22,7 @@ contract SWAgreement
     //total no of requirements via this contract at any time
     uint public totalReq = uint(0); 
     bool public signAgreement = false;
+    uint public minimumValPay = 1;
     
     struct _requirement 
     {
@@ -165,9 +166,10 @@ contract SWAgreement
     uint public payTime = uint(0);
 
     function pay() public payable {
+        uint256 minimumUsd = minimumValPay * 10 ** 18;
+        require(getConversionRate(msg.value) >= minimumUsd ," You need to spend more ETH");
         payTime = nowDate();
-        // ETH -> USD conversion rate
-        msg.value;
+        
     }
 
     function getVersion() public view returns (uint256) {
@@ -181,9 +183,8 @@ contract SWAgreement
         return uint256(answer * 10000000000);
     }
 
-    // Wei = 1000000000000000000
-    // Gwei = 1000000000
-    // Eth = 1
+    // Wei  = 1000000000000000000
+    // Eth  = 1
     function getConversionRate (uint256 ethAmount) public view returns (uint256) {
         uint256 ethPrice = getPrice();
         uint256 ethAmountInUsd = (ethPrice * ethAmount) / 1000000000000000000;
@@ -191,3 +192,4 @@ contract SWAgreement
     }
 
 }
+
