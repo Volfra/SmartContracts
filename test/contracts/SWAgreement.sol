@@ -6,7 +6,7 @@ pragma solidity ^0.8.0;
 * @notice Smart Contract Software Development Agreement
 */
 
-import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+import './AggregatorV3Interface.sol';
 
 contract SWAgreement
 {
@@ -22,7 +22,7 @@ contract SWAgreement
     //total no of requirements via this contract at any time
     uint public totalReq = uint(0); 
     bool public signAgreement = false;
-    uint public minimumValPay = 1;
+    uint public minimumUsd = 50;
     
     struct _requirement 
     {
@@ -165,9 +165,10 @@ contract SWAgreement
 
     uint public payTime = uint(0);
 
-    function pay() public payable {
-        uint256 minimumUsd = minimumValPay * 10 ** 18;
-        require(getConversionRate(msg.value) >= minimumUsd ," You need to spend more ETH");
+    function validateMinimumPay(uint valueUsd) public payable {
+        uint256 minimumWei = minimumUsd * 10 ** 18;  
+        uint256 valueWei = valueUsd * 10 ** 18;
+        require(valueWei >= minimumWei ," You need to spend more ETH");
         payTime = nowDate();
     }
 
@@ -182,8 +183,7 @@ contract SWAgreement
         return uint256(answer * 10000000000);
     }
 
-    // Wei  = 1000000000000000000
-    // Eth  = 1
+    // 1 Eth = 1000000000000000000 Wei
     function getConversionRate (uint256 ethAmount) public view returns (uint256) {
         uint256 ethPrice = getPrice();
         uint256 ethAmountInUsd = (ethPrice * ethAmount) / 1000000000000000000;
