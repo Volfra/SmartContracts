@@ -10,9 +10,11 @@ import './AggregatorV3Interface.sol';
 
 contract SWAgreement
 {
-    address public developer = 0x2fcd44991ca6B22177Dc6b45e8699C6C389066c8;   // government who creates the agreement
-    address public client; // whom address the agreement
+    address public client = 0x2fcd44991ca6B22177Dc6b45e8699C6C389066c8;   // government who creates the agreement
+    address public developer; // whom address the agreement
     uint public cost;
+    mapping(address => uint256) public addressToAmount;
+
 
     uint public beginTime = uint(0);
     uint public finishTime = uint(0);  
@@ -47,15 +49,14 @@ contract SWAgreement
     }
 
     /*** General Data Agreement ***/
-
     constructor  ()   {
-        client = msg.sender;
+        developer = msg.sender;
         beginTime = nowDate();
+        signature();
     }
     
     //Signature agreement
-    function signature (address clientAddress) public {
-        client = clientAddress;
+    function signature () public {
         signTime = nowDate();
         signAgreement = true;
     }
@@ -65,7 +66,7 @@ contract SWAgreement
     
     modifier isOwner
     {
-        require(msg.sender == client);
+        require(msg.sender == developer);
         _;
     }
     
@@ -96,20 +97,17 @@ contract SWAgreement
 
     function addRequirement 
         (string memory _reqID, 
-            uint _dateDeliver, 
-                string memory _desc, 
-                    bool _acceptance,
-                        uint _dateAcceptance
+                string memory _desc
         ) public
     {
         totalReq = totalReq + 1;
         _requirement  memory myReq = _requirement (
             {
                 reqID: _reqID,
-                dateDeliver: _dateDeliver,
+                dateDeliver: initTime(),
                 description: _desc,
-                acceptance: _acceptance,
-                dateAcceptance: _dateAcceptance
+                acceptance: false,
+                dateAcceptance: initTime()
             });
         __Reqs[_reqID] = myReq;
         //emit Add(msg.sender, totalReq);
@@ -117,38 +115,45 @@ contract SWAgreement
     
     function updateRequirement (string memory _reqID, string memory _desc) public
     {
-        (string memory sID, uint uDateDeliv, , , ) = getRequirement(_reqID); 
-        _requirement  memory myReq = _requirement (
+        (string memory sID, uint uDateDeliv, , bool bAccep, uint uDateAccep) 
+            = getRequirement(_reqID);
+        _requirement memory myReq = _requirement (
             {
                 reqID: sID,
                 dateDeliver: uDateDeliv,
                 description: _desc,
-                acceptance: false,
-                dateAcceptance: 0
+                acceptance: bAccep,
+                dateAcceptance: uDateAccep
             });
         __Reqs[_reqID] = myReq;
     }
 
-    function getRequirement (string memory _req) public view
+    function getRequirement (string memory _reqID) public view
         returns (string memory, uint, string memory, bool, uint)
     {
         return (
-                __Reqs[_req].reqID,
-                __Reqs[_req].dateDeliver,
-                __Reqs[_req].description,
-                __Reqs[_req].acceptance,
-                __Reqs[_req].dateAcceptance
+                __Reqs[_reqID].reqID,
+                __Reqs[_reqID].dateDeliver,
+                __Reqs[_reqID].description,
+                __Reqs[_reqID].acceptance,
+                __Reqs[_reqID].dateAcceptance
                 );
                 
     }
 
     function acceptanceRequirement(string memory _reqID) public {
-        (string memory sID, uint uDateDeliv, string memory sDesc, bool bAccep, uint uDateAccep) 
+        (string memory sID, uint uDateDeliv, string memory sDesc, bool bAccep, ) 
             = getRequirement(_reqID); 
         require(bAccep == false);
-        bAccep = true;
-        uDateAccep = nowDate();
-        addRequirement(sID, uDateDeliv, sDesc, bAccep, uDateAccep);
+        _requirement memory myReq = _requirement (
+        {
+            reqID: sID,
+            dateDeliver: uDateDeliv,
+            description: sDesc,
+            acceptance: true,
+            dateAcceptance: nowDate()
+        });
+        __Reqs[_reqID] = myReq;
     }
 
     /*** Increments ***/
@@ -190,9 +195,16 @@ contract SWAgreement
         return ethAmountInUsd;
     }
 
+    //fund account
+    function fundAccount () public payable {
+        validateMinimumPay(msg.value);
+        addressToAmount[developer] += msg.value;
+    }
+
+
     //return funds to client
-    function withdraw() payable isOwner public {
-        payable(msg.sender).transfer(address(this).balance);
+    function withdrawAccount () public payable isOwner {
+        payable(developer).transfer(address(this).balance);
     }
 
 }
